@@ -96,9 +96,8 @@ def load_detector():
             raise FileNotFoundError(f"Model path not found: {model_path}")
 
         # Load the detector
-        detector_instance = PaddleDBNet(load_line_model=True)
+        detector_instance = PaddleDBNet(load_line_model=True, model_path=model_path)
         return detector_instance
-    
     except Exception as e:
         st.error(f"Error loading Detector model: {e}")
         st.stop()
