@@ -89,7 +89,7 @@ Upload an image containing Sylheti Nagri script to detect text, crop individual 
 def load_detector():
     """
     Loads the APSIS OCR detector model.
-    Attempts default loading first, then falls back to bundled models if default fails.
+    Attempts default loading first, then provides guidance if it fails.
     """
     detector_instance = None
     try:
@@ -99,20 +99,16 @@ def load_detector():
         st.success("Detector model loaded successfully with default settings.")
         return detector_instance
     except Exception as e_default:
-        st.warning(f"Default detector model loading failed: {e_default}. Attempting to load from bundled models...")
-        try:
-            # If default fails, attempt to load from the bundled path
-            # This assumes PaddleDBNet takes a 'model_path' argument
-            # You might need to adjust the parameter name based on apsisocr documentation
-            detector_instance = PaddleDBNet(model_path=os.path.join(APSISOCR_BUNDLED_MODELS_BASE, "line"))
-            st.success("Detector model loaded successfully from bundled models.")
-            return detector_instance
-        except Exception as e_bundled:
-            # If both attempts fail, raise an error and stop the app
-            st.error(f"Error loading Detector model from both default and bundled paths.")
-            st.error(f"Default load error: {e_default}")
-            st.error(f"Bundled load error: {e_bundled}")
-            st.stop() # Stop the Streamlit app execution
+        st.warning(f"Default detector model loading failed: {e_default}.")
+        st.warning("This often means APSIS OCR could not find its model files in the default location.")
+        st.warning(f"The default location is likely: {e_default}".split("No such file or directory: ")[-1].strip()) # Try to extract path from error
+
+        st.error("Automatic fallback to bundled models failed because 'model_path' is not a valid argument for PaddleDBNet.")
+        st.error("To fix this, you need to determine how APSIS OCR is designed to load models from a custom path.")
+        st.error("Please consult the APSIS OCR documentation or source code for the correct method (e.g., a different parameter name, an environment variable, or a configuration function).")
+
+        # Stop the Streamlit app execution as the detector could not be loaded
+        st.stop()
 
 # Load the detector model using the function with fallback
 detector = load_detector()
