@@ -89,7 +89,7 @@ Upload an image containing Sylheti Nagri script to detect text, crop individual 
 def load_detector():
     """
     Loads the APSIS OCR detector model.
-    Attempts default loading first, then provides guidance if it fails.
+    Attempts default loading first. If it fails, provides guidance on how to fix.
     """
     detector_instance = None
     try:
@@ -99,16 +99,25 @@ def load_detector():
         st.success("Detector model loaded successfully with default settings.")
         return detector_instance
     except Exception as e_default:
-        st.warning(f"Default detector model loading failed: {e_default}.")
-        st.warning("This often means APSIS OCR could not find its model files in the default location.")
-        st.warning(f"The default location is likely: {e_default}".split("No such file or directory: ")[-1].strip()) # Try to extract path from error
+        st.error(f"Error loading Detector model: {e_default}.")
+        st.error("This often means APSIS OCR could not find its model files in the default location.")
+        # Attempt to extract the problematic path from the error message
+        error_message = str(e_default)
+        if "No such file or directory:" in error_message:
+             problem_path = error_message.split("No such file or directory:")[-1].strip()
+             st.error(f"The library was looking for files in: {problem_path}")
 
-        st.error("Automatic fallback to bundled models failed because 'model_path' is not a valid argument for PaddleDBNet.")
         st.error("To fix this, you need to determine how APSIS OCR is designed to load models from a custom path.")
         st.error("Please consult the APSIS OCR documentation or source code for the correct method (e.g., a different parameter name, an environment variable, or a configuration function).")
+        st.error(f"You have bundled the models in the '{APSISOCR_BUNDLED_MODELS_BASE}' directory in your repository.")
+        st.error("You need to find the APSIS OCR method to point it to this directory.")
+
 
         # Stop the Streamlit app execution as the detector could not be loaded
         st.stop()
+
+# Load the detector model using the function. It will stop if loading fails.
+detector = load_detector()
 
 # Load the detector model using the function with fallback
 detector = load_detector()
