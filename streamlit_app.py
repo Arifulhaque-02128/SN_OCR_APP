@@ -88,8 +88,17 @@ Upload an image containing Sylheti Nagri script to detect text, crop individual 
 @st.cache_resource
 def load_detector():
     try:
+        # Construct the path to the line model
+        model_path = os.path.join(APSISOCR_BUNDLED_MODELS_BASE, "line")
+
+        # Check if the model path exists
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Model path not found: {model_path}")
+
+        # Load the detector
         detector_instance = PaddleDBNet(load_line_model=True)
         return detector_instance
+    
     except Exception as e:
         st.error(f"Error loading Detector model: {e}")
         st.stop()
