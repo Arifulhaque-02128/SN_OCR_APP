@@ -34,6 +34,9 @@ OCR_CONFIG_PATH = "configs.yaml"
 WEIGHTS_LOCAL_PATH = "model_weights.weights.h5"
 FONT_PATH = "C:/Users/User/Desktop/SN_OCR/Surma-4.000/Surma-Regular.ttf"
 
+# Define the base directory for your bundled apsisocr models
+APSISOCR_BUNDLED_MODELS_BASE = "apsisocr_models"
+
 # --- Define ModelConfigs class (from your configs.py) ---
 class ModelConfigs(BaseModelConfigs):
     def __init__(self):
@@ -84,13 +87,34 @@ Upload an image containing Sylheti Nagri script to detect text, crop individual 
 # --- Cached Models Loading ---
 @st.cache_resource
 def load_detector():
+    """
+    Loads the APSIS OCR detector model.
+    Attempts default loading first, then falls back to bundled models if default fails.
+    """
+    detector_instance = None
     try:
+        st.info("Attempting to load detector model using default settings...")
+        # Attempt the default loading first
         detector_instance = PaddleDBNet(load_line_model=True)
+        st.success("Detector model loaded successfully with default settings.")
         return detector_instance
-    except Exception as e:
-        st.error(f"Error loading Detector model: {e}")
-        st.stop()
+    except Exception as e_default:
+        st.warning(f"Default detector model loading failed: {e_default}. Attempting to load from bundled models...")
+        try:
+            # If default fails, attempt to load from the bundled path
+            # This assumes PaddleDBNet takes a 'model_path' argument
+            # You might need to adjust the parameter name based on apsisocr documentation
+            detector_instance = PaddleDBNet(model_path=os.path.join(APSISOCR_BUNDLED_MODELS_BASE, "line"))
+            st.success("Detector model loaded successfully from bundled models.")
+            return detector_instance
+        except Exception as e_bundled:
+            # If both attempts fail, raise an error and stop the app
+            st.error(f"Error loading Detector model from both default and bundled paths.")
+            st.error(f"Default load error: {e_default}")
+            st.error(f"Bundled load error: {e_bundled}")
+            st.stop() # Stop the Streamlit app execution
 
+# Load the detector model using the function with fallback
 detector = load_detector()
 
 @st.cache_resource
