@@ -34,9 +34,6 @@ OCR_CONFIG_PATH = "configs.yaml"
 WEIGHTS_LOCAL_PATH = "model_weights.weights.h5"
 FONT_PATH = "C:/Users/User/Desktop/SN_OCR/Surma-4.000/Surma-Regular.ttf"
 
-# Define the base directory for your bundled apsisocr models
-APSISOCR_BUNDLED_MODELS_BASE = "apsisocr_models"
-
 # --- Define ModelConfigs class (from your configs.py) ---
 class ModelConfigs(BaseModelConfigs):
     def __init__(self):
